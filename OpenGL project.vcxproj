@@ -133,6 +133,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Laboratory_7_resources_part_1\Camera.hpp" />
+    <ClInclude Include="Laboratory_7_resources_part_1\Mesh.hpp" />
+    <ClInclude Include="Laboratory_7_resources_part_1\Model3D.hpp" />
+    <ClInclude Include="Laboratory_7_resources_part_1\Shader.hpp" />
+    <ClInclude Include="Laboratory_7_resources_part_1\stb_image.h" />
+    <ClInclude Include="Laboratory_7_resources_part_1\tiny_obj_loader.h" />
     <ClInclude Include="OpenGL dev libs\include\GLFW\glfw3.h" />
     <ClInclude Include="OpenGL dev libs\include\GLFW\glfw3native.h" />
     <ClInclude Include="OpenGL dev libs\include\glm\glm.hpp" />
@@ -142,7 +148,13 @@
     <ClInclude Include="OpenGL dev libs\include\GL\wglew.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Laboratory_7_resources_part_1\Camera.cpp" />
+    <ClCompile Include="Laboratory_7_resources_part_1\main.cpp" />
+    <ClCompile Include="Laboratory_7_resources_part_1\Mesh.cpp" />
+    <ClCompile Include="Laboratory_7_resources_part_1\Model3D.cpp" />
+    <ClCompile Include="Laboratory_7_resources_part_1\Shader.cpp" />
+    <ClCompile Include="Laboratory_7_resources_part_1\stb_image.cpp" />
+    <ClCompile Include="Laboratory_7_resources_part_1\tiny_obj_loader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
