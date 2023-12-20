@@ -133,6 +133,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.hpp" />
+    <ClInclude Include="Mesh.hpp" />
+    <ClInclude Include="Model3D.hpp" />
     <ClInclude Include="OpenGL dev libs\include\GLFW\glfw3.h" />
     <ClInclude Include="OpenGL dev libs\include\GLFW\glfw3native.h" />
     <ClInclude Include="OpenGL dev libs\include\glm\glm.hpp" />
@@ -140,9 +143,24 @@
     <ClInclude Include="OpenGL dev libs\include\GL\glew.h" />
     <ClInclude Include="OpenGL dev libs\include\GL\glxew.h" />
     <ClInclude Include="OpenGL dev libs\include\GL\wglew.h" />
+    <ClInclude Include="Shader.hpp" />
+    <ClInclude Include="stb_image.h" />
+    <ClInclude Include="tiny_obj_loader.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Model3D.cpp" />
+    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="stb_image.cpp" />
+    <ClCompile Include="tiny_obj_loader.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="textures\FarmhouseTexture.jpg" />
+    <Image Include="textures\FarmhouseTextureBumpMap.jpg" />
+    <Image Include="textures\hazard2.png" />
+    <Image Include="textures\stall_texture.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
