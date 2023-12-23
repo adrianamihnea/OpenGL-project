@@ -156,12 +156,6 @@
     <ClCompile Include="stb_image.cpp" />
     <ClCompile Include="tiny_obj_loader.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <Image Include="textures\FarmhouseTexture.jpg" />
-    <Image Include="textures\FarmhouseTextureBumpMap.jpg" />
-    <Image Include="textures\hazard2.png" />
-    <Image Include="textures\stall_texture.png" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

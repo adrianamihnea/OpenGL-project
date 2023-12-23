@@ -1,0 +1,275 @@
+# created with pCon.planner
+
+newmtl mat_Global_e8681456
+Ka 1 1 1
+Kd 1 1 1
+Ks 0.099497586 0.099497586 0.099497586
+Ns 38.390247
+illum 2
+
+newmtl mat_SKP_Buda_ad5183de
+Ka 1 1 0.49411765
+Kd 1 1 0.49411765
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Daiktukeramika_ad5183de
+Ka 1 1 1
+Kd 1 1 1
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Halkorpusas_ad5183de
+Ka 0.88627452 0.88627452 0.88627452
+Kd 0.88627452 0.88627452 0.88627452
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Halsviesa_ad5183de
+Ka 1 0.99215686 0.92941177
+Kd 1 0.99215686 0.92941177
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Jungbalti_ad5183de
+Ka 0.92941177 0.92941177 0.92941177
+Kd 0.92941177 0.92941177 0.92941177
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Kede_ad5183de
+Ka 0.199118 0.25402272 0.20303676
+Kd 1 1 1
+map_Kd 427f3f95ac1798b1.png
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Kedescromas_ad5183de
+Ka 0.14901961 0.14901961 0.14901961
+Kd 0.14901961 0.14901961 0.14901961
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Kedesratukai_ad5183de
+Ka 0.2 0.2 0.2
+Kd 0.2 0.2 0.2
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Koriukas1_ad5183de
+Ka 0.69858277 0.56791639 0.44100901
+Kd 1 1 1
+map_Kd 61bda89e2ea3cdce.png
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Langas_ad5183de
+Ka 0.90196079 0.90196079 0.90196079
+Kd 0.90196079 0.90196079 0.90196079
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Lapai_ad5183de
+Ka 0.35877803 0.52163291 0.29169479
+Kd 1 1 1
+map_Kd 952942e98bb38faf.png
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_LoptopoLOGO_ad5183de
+Ka 1 1 1
+Kd 1 1 1
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Loptopokorpusas_ad5183de
+Ka 0.58431375 0.60392159 0.627451
+Kd 0.58431375 0.60392159 0.627451
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Lubos_ad5183de
+Ka 1 1 1
+Kd 1 1 1
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Medziolazdeles_ad5183de
+Ka 0.6842103 0.49267766 0.25902575
+Kd 1 1 1
+map_Kd 2573b06267435e14.png
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Pagalve2_ad5183de
+Ka 0.12793086 0.21809711 0.19451733
+Kd 1 1 1
+map_Kd 3edab9b30009d0f8.png
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Pagalve_ad5183de
+Ka 0.12793086 0.21809711 0.19451733
+Kd 1 1 1
+map_Kd 3edab9b30009d0f8.png
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Parketas2_ad5183de
+Ka 0.62651902 0.51574773 0.4066129
+Kd 1 1 1
+map_Kd c5390f5fbc37d290.png
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Paveikslas1_ad5183de
+Ka 0.21648988 0.53038651 0.5466243
+Kd 1 1 1
+map_Kd b78c5ccb6f1d21bf.png
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Rankenoscromas_ad5183de
+Ka 0.86666667 0.86666667 0.86666667
+Kd 0.86666667 0.86666667 0.86666667
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Romanete_3ea6f44c_ad5183de
+Ka 1 1 1
+Kd 1 1 1
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Romanete_e8c7e4af_ad5183de
+Ka 0.47810385 0.428774 0.39492232
+Kd 1 1 1
+map_Kd 72783926aa4ee3fe.png
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Rozetesmetalas_ad5183de
+Ka 0.64705884 0.66666669 0.68235296
+Kd 0.64705884 0.66666669 0.68235296
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Sienos_ad5183de
+Ka 0.86666667 0.84705883 0.82745099
+Kd 0.86666667 0.84705883 0.82745099
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Skylute_ad5183de
+Ka 0.33725491 0.33725491 0.33725491
+Kd 0.33725491 0.33725491 0.33725491
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Sofoskojos1_ad5183de
+Ka 0.13725491 0.13725491 0.13725491
+Kd 0.13725491 0.13725491 0.13725491
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Sofosmedziaga1_ad5183de
+Ka 0.12793086 0.21809711 0.19451733
+Kd 1 1 1
+map_Kd 3edab9b30009d0f8.png
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Sofosmedziaga2_ad5183de
+Ka 0.12793086 0.21809711 0.19451733
+Kd 1 1 1
+map_Kd 3edab9b30009d0f8.png
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Sofosmedziaga3_ad5183de
+Ka 0.12793086 0.21809711 0.19451733
+Kd 1 1 1
+map_Kd 3edab9b30009d0f8.png
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Staliuko_a288df14_ad5183de
+Ka 0.2 0.2 0.2
+Kd 0.2 0.2 0.2
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Staliukomedis_ad5183de
+Ka 0.69594407 0.56199533 0.43164656
+Kd 1 1 1
+map_Kd 11f3824a9529e39.png
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Stalometalas_ad5183de
+Ka 0.19215687 0.19215687 0.20392157
+Kd 0.19215687 0.19215687 0.20392157
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Stalovirsus_ad5183de
+Ka 0.19215687 0.19215687 0.20392157
+Kd 0.19215687 0.19215687 0.20392157
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Stiklas_ad5183de
+Ka 0 0 0
+Kd 0 0 0
+Ks 0 0 0
+Ns 0
+d 0
+illum 2
+
+newmtl mat_SKP_Torserobronza_ad5183de
+Ka 0.14901961 0.14901961 0.14901961
+Kd 0.14901961 0.14901961 0.14901961
+Ks 0 0 0
+Ns 0
+illum 2
+
+newmtl mat_SKP_Torserokeramika_ad5183de
+Ka 1 1 1
+Kd 1 1 1
+Ks 0 0 0
+Ns 0
+illum 2
+

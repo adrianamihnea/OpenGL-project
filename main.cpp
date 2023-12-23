@@ -26,36 +26,29 @@
 #include "Model3D.hpp"
 
 int glWindowWidth = 800;
-int glWindowHeight = 600;
+int glWindowHeight = 800;
 int retina_width, retina_height;
 GLFWwindow* glWindow = NULL;
 
 glm::mat4 model;
 GLint modelLoc;
 
-gps::Camera myCamera(glm::vec3(0.0f, 5.0f, 15.0f), glm::vec3(0.0f, 5.0f, -10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-float cameraSpeed = 0.01f;
+glm::mat4 modelTree;
+GLint modelLocTree;
+
+gps::Camera myCamera(glm::vec3(-75.0f, -50.0f, -30.0f), glm::vec3(0.0f, 5.0f, -10.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+float cameraSpeed = 0.1f;
 
 bool pressedKeys[1024];
-float angle = 0.0f;
+float angle = 1.0f;
 
-gps::Model3D myModel;
+gps::Model3D grass, tree;
 gps::Shader myCustomShader;
 
 GLuint verticesVBO;
 GLuint verticesEBO;
 GLuint objectVAO;
 GLuint texture;
-
-//vertex position and UV coordinates
-GLfloat vertexData[] = {
-        //  first triangle
-        0.0f
-};
-
-GLuint vertexIndices[] = {
-        0
-};
 
 void windowResizeCallback(GLFWwindow* window, int width, int height) {
 
@@ -94,6 +87,11 @@ void processMovement()
 
 	if (pressedKeys[GLFW_KEY_E]) {
 		angle -= 1.0f;
+	}
+
+	if (pressedKeys[GLFW_KEY_8]) {
+		// rotate up
+		myCamera.rotate(1.0f, 0.0f);  // Adjust pitch angle as needed
 	}
 
 	if (pressedKeys[GLFW_KEY_W]) {
@@ -225,13 +223,13 @@ GLuint ReadTextureFromFile(const char* file_name) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindTexture(GL_TEXTURE_2D, 0);
-
 	return textureID;
 }
 
+float delta = 0;
 void renderScene()
 {
-    glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
+    glClearColor(0.53f,	0.81f, 0.92f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glViewport(0, 0, retina_width, retina_height);
@@ -248,16 +246,35 @@ void renderScene()
 	GLint viewLoc = glGetUniformLocation(myCustomShader.shaderProgram, "view");
 	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
+	/*delta += 0.001;
+	model = glm::translate(model, glm::vec3(delta, 0, 0));*/
+
 	//create rotation matrix
 	model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::translate(model, glm::vec3(0, 0, 0));
+
+	
+
 	//send matrix data to vertex shader
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
-	glActiveTexture(GL_TEXTURE0);
+	/*glActiveTexture(GL_TEXTURE0);
 	glUniform1i(glGetUniformLocation(myCustomShader.shaderProgram, "diffuseTexture"), 0);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	myModel.Draw(myCustomShader);
+	glBindTexture(GL_TEXTURE_2D, texture);*/
+
+	//for (int i = 0; i < 500; i++)
+	grass.Draw(myCustomShader);
+
+	model = glm::translate(model, glm::vec3(0, 10, 10));
+	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 1.0f));
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+	tree.Draw(myCustomShader);
+
+	/*glBindVertexArray(objectVAO);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);*/
+
+
 }
 
 void loadTriangleData() {
@@ -320,9 +337,9 @@ int main(int argc, const char * argv[]) {
 	GLint projLoc = glGetUniformLocation(myCustomShader.shaderProgram, "projection");
 	glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-	myModel.LoadModel("objects/stall.obj");
-	texture = ReadTextureFromFile("textures/stall_texture.png");
-
+	//argument 1 = obj file; argument 2 = textures folder
+	grass.LoadModel("objects/Grass.obj", "textures/");
+	tree.LoadModel("objects/Tree.obj", "textures/");
 
 
 	while (!glfwWindowShouldClose(glWindow)) {
