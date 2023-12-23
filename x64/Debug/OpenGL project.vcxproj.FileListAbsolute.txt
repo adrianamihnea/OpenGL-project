@@ -1,1 +1,2 @@
 C:\GitHub\OpenGL project\x64\Debug\OpenGL project.exe
+C:\GitHub\PG project template\x64\Debug\OpenGL project.exe

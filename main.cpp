@@ -1,356 +1,331 @@
-//
-//  main.cpp
-//  OpenGL_Shader_Example_step1
-//
-//  Created by CGIS on 02/11/16.
-//  Copyright � 2016 CGIS. All rights reserved.
-//
-
 #if defined (__APPLE__)
-	#define GLFW_INCLUDE_GLCOREARB
+#define GLFW_INCLUDE_GLCOREARB
+#define GL_SILENCE_DEPRECATION
 #else
-	#define GLEW_STATIC
-	#include <GL/glew.h>
+#define GLEW_STATIC
+#include <GL/glew.h>
 #endif
 
 #include <GLFW/glfw3.h>
 
-#include <glm/glm.hpp>//core glm functionality
-#include <glm/gtc/matrix_transform.hpp>//glm extension for generating common transformation matrices
-#include <glm/gtc/type_ptr.hpp>
+#include <glm/glm.hpp> //core glm functionality
+#include <glm/gtc/matrix_transform.hpp> //glm extension for generating common transformation matrices
+#include <glm/gtc/matrix_inverse.hpp> //glm extension for computing inverse matrices
+#include <glm/gtc/type_ptr.hpp> //glm extension for accessing the internal data structure of glm types
 
-#include <string>
-
+#include "Window.h"
 #include "Shader.hpp"
 #include "Camera.hpp"
 #include "Model3D.hpp"
 
-int glWindowWidth = 800;
-int glWindowHeight = 800;
-int retina_width, retina_height;
-GLFWwindow* glWindow = NULL;
+#include <iostream>
 
+// window
+gps::Window myWindow;
+
+// matrices
 glm::mat4 model;
+glm::mat4 modelTeapot;
+glm::mat4 view;
+glm::mat4 projection;
+glm::mat3 normalMatrix;
+
+// light parameters
+glm::vec3 lightDir;
+glm::vec3 lightColor;
+
+// shader uniform locations
 GLint modelLoc;
+GLint modelLocTeapot;
+GLint viewLoc;
+GLint projectionLoc;
+GLint normalMatrixLoc;
+GLint lightDirLoc;
+GLint lightColorLoc;
 
-glm::mat4 modelTree;
-GLint modelLocTree;
-
+// camera
+//gps::Camera myCamera(
+//    glm::vec3(0.0f, 0.0f, 3.0f),
+//    glm::vec3(0.0f, 0.0f, -10.0f),
+//    glm::vec3(0.0f, 1.0f, 0.0f));
 gps::Camera myCamera(glm::vec3(-75.0f, -50.0f, -30.0f), glm::vec3(0.0f, 5.0f, -10.0f), glm::vec3(0.0f, 0.0f, -1.0f));
-float cameraSpeed = 0.1f;
 
-bool pressedKeys[1024];
-float angle = 1.0f;
+GLfloat cameraSpeed = 0.1f;
 
-gps::Model3D grass, tree;
-gps::Shader myCustomShader;
+GLboolean pressedKeys[1024];
 
-GLuint verticesVBO;
-GLuint verticesEBO;
-GLuint objectVAO;
-GLuint texture;
+// models
+gps::Model3D teapot;
+gps::Model3D grass;
+GLfloat angle;
+
+// shaders
+gps::Shader myBasicShader;
+
+GLenum glCheckError_(const char* file, int line)
+{
+    GLenum errorCode;
+    while ((errorCode = glGetError()) != GL_NO_ERROR) {
+        std::string error;
+        switch (errorCode) {
+        case GL_INVALID_ENUM:
+            error = "INVALID_ENUM";
+            break;
+        case GL_INVALID_VALUE:
+            error = "INVALID_VALUE";
+            break;
+        case GL_INVALID_OPERATION:
+            error = "INVALID_OPERATION";
+            break;
+        case GL_OUT_OF_MEMORY:
+            error = "OUT_OF_MEMORY";
+            break;
+        case GL_INVALID_FRAMEBUFFER_OPERATION:
+            error = "INVALID_FRAMEBUFFER_OPERATION";
+            break;
+        }
+        std::cout << error << " | " << file << " (" << line << ")" << std::endl;
+    }
+    return errorCode;
+}
+#define glCheckError() glCheckError_(__FILE__, __LINE__)
 
 void windowResizeCallback(GLFWwindow* window, int width, int height) {
-
-	fprintf(stdout, "window resized to width: %d , and height: %d\n", width, height);
-	//TODO
+    fprintf(stdout, "Window resized! New width: %d , and height: %d\n", width, height);
+    //TODO
 }
 
 void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mode) {
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, GL_TRUE);
+    }
 
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-
-		glfwSetWindowShouldClose(window, GL_TRUE);
-	}
-
-	if (key >= 0 && key < 1024)	{
-
-		if (action == GLFW_PRESS) {
-			pressedKeys[key] = true;
-		}
-		else if (action == GLFW_RELEASE) {
-			pressedKeys[key] = false;
-		}
-	}
+    if (key >= 0 && key < 1024) {
+        if (action == GLFW_PRESS) {
+            pressedKeys[key] = true;
+        }
+        else if (action == GLFW_RELEASE) {
+            pressedKeys[key] = false;
+        }
+    }
 }
 
 void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
-
+    //TODO
 }
 
-void processMovement()
-{
+void processMovement() {
+    if (pressedKeys[GLFW_KEY_W]) {
+        myCamera.move(gps::MOVE_FORWARD, cameraSpeed);
+        //update view matrix
+        view = myCamera.getViewMatrix();
+        myBasicShader.useShaderProgram();
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        // compute normal matrix for teapot
+        normalMatrix = glm::mat3(glm::inverseTranspose(view * model));
+    }
 
-	if (pressedKeys[GLFW_KEY_Q]) {
-		angle += 1.0f;
-	}
+    if (pressedKeys[GLFW_KEY_S]) {
+        myCamera.move(gps::MOVE_BACKWARD, cameraSpeed);
+        //update view matrix
+        view = myCamera.getViewMatrix();
+        myBasicShader.useShaderProgram();
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        // compute normal matrix for teapot
+        normalMatrix = glm::mat3(glm::inverseTranspose(view * model));
+    }
 
-	if (pressedKeys[GLFW_KEY_E]) {
-		angle -= 1.0f;
-	}
+    if (pressedKeys[GLFW_KEY_A]) {
+        myCamera.move(gps::MOVE_LEFT, cameraSpeed);
+        //update view matrix
+        view = myCamera.getViewMatrix();
+        myBasicShader.useShaderProgram();
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        // compute normal matrix for teapot
+        normalMatrix = glm::mat3(glm::inverseTranspose(view * model));
+    }
 
-	if (pressedKeys[GLFW_KEY_8]) {
-		// rotate up
-		myCamera.rotate(1.0f, 0.0f);  // Adjust pitch angle as needed
-	}
+    if (pressedKeys[GLFW_KEY_D]) {
+        myCamera.move(gps::MOVE_RIGHT, cameraSpeed);
+        //update view matrix
+        view = myCamera.getViewMatrix();
+        myBasicShader.useShaderProgram();
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        // compute normal matrix for teapot
+        normalMatrix = glm::mat3(glm::inverseTranspose(view * model));
+    }
 
-	if (pressedKeys[GLFW_KEY_W]) {
-		myCamera.move(gps::MOVE_FORWARD, cameraSpeed);
-	}
+    if (pressedKeys[GLFW_KEY_Q]) {
+        angle -= 1.0f;
+        // update model matrix for teapot
+        model = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0, 1, 0));
+        // update normal matrix for teapot
+        normalMatrix = glm::mat3(glm::inverseTranspose(view * model));
+    }
 
-	if (pressedKeys[GLFW_KEY_S]) {
-		myCamera.move(gps::MOVE_BACKWARD, cameraSpeed);
-	}
-
-	if (pressedKeys[GLFW_KEY_A]) {
-		myCamera.move(gps::MOVE_LEFT, cameraSpeed);
-	}
-
-	if (pressedKeys[GLFW_KEY_D]) {
-		myCamera.move(gps::MOVE_RIGHT, cameraSpeed);
-	}
+    if (pressedKeys[GLFW_KEY_E]) {
+        angle += 1.0f;
+        // update model matrix for teapot
+        model = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0, 1, 0));
+        // update normal matrix for teapot
+        normalMatrix = glm::mat3(glm::inverseTranspose(view * model));
+    }
 }
 
-bool initOpenGLWindow() {
-
-	if (!glfwInit()) {
-		fprintf(stderr, "ERROR: could not start GLFW3\n");
-		return false;
-	}
-
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-	//window scaling for HiDPI displays
-	glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
-
-	// for multisampling/antialising
-    glfwWindowHint(GLFW_SAMPLES, 4);
-
-	glWindow = glfwCreateWindow(glWindowWidth, glWindowHeight, "OpenGL Texturing", NULL, NULL);
-
-	if (!glWindow) {
-		fprintf(stderr, "ERROR: could not open window with GLFW3\n");
-		glfwTerminate();
-		return false;
-	}
-
-	glfwSetWindowSizeCallback(glWindow, windowResizeCallback);
-    glfwSetKeyCallback(glWindow, keyboardCallback);
-    glfwSetCursorPosCallback(glWindow, mouseCallback);
-    //glfwSetInputMode(glWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-	glfwMakeContextCurrent(glWindow);
-
-	glfwSwapInterval(1);
-
-#if not defined (__APPLE__)
-	// start GLEW extension handler
-	glewExperimental = GL_TRUE;
-	glewInit();
-#endif
-
-	// get version info
-	const GLubyte* renderer = glGetString(GL_RENDERER); // get renderer string
-	const GLubyte* version = glGetString(GL_VERSION); // version as a string
-	printf("Renderer: %s\n", renderer);
-	printf("OpenGL version supported %s\n", version);
-
-	//for RETINA display
-	glfwGetFramebufferSize(glWindow, &retina_width, &retina_height);
-
-	return true;
+void initOpenGLWindow() {
+    myWindow.Create(1024, 768, "OpenGL Project Core");
 }
 
-GLuint ReadTextureFromFile(const char* file_name) {
-
-	int x, y, n;
-	int force_channels = 4;
-	unsigned char* image_data = stbi_load(file_name, &x, &y, &n, force_channels);
-
-	if (!image_data) {
-		fprintf(stderr, "ERROR: could not load %s\n", file_name);
-		return false;
-	}
-	// NPOT check
-	if ((x & (x - 1)) != 0 || (y & (y - 1)) != 0) {
-		fprintf(
-			stderr, "WARNING: texture %s is not power-of-2 dimensions\n", file_name
-		);
-	}
-
-	int width_in_bytes = x * 4;
-	unsigned char *top = NULL;
-	unsigned char *bottom = NULL;
-	unsigned char temp = 0;
-	int half_height = y / 2;
-
-	for (int row = 0; row < half_height; row++) {
-
-		top = image_data + row * width_in_bytes;
-		bottom = image_data + (y - row - 1) * width_in_bytes;
-
-		for (int col = 0; col < width_in_bytes; col++) {
-
-			temp = *top;
-			*top = *bottom;
-			*bottom = temp;
-			top++;
-			bottom++;
-		}
-	}
-
-	GLuint textureID;
-	glGenTextures(1, &textureID);
-	glBindTexture(GL_TEXTURE_2D, textureID);
-	glTexImage2D(
-		GL_TEXTURE_2D,
-		0,
-		GL_SRGB, //GL_SRGB,//GL_RGBA,
-		x,
-		y,
-		0,
-		GL_RGBA,
-		GL_UNSIGNED_BYTE,
-		image_data
-	);
-	glGenerateMipmap(GL_TEXTURE_2D);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	return textureID;
+void setWindowCallbacks() {
+    glfwSetWindowSizeCallback(myWindow.getWindow(), windowResizeCallback);
+    glfwSetKeyCallback(myWindow.getWindow(), keyboardCallback);
+    glfwSetCursorPosCallback(myWindow.getWindow(), mouseCallback);
 }
 
-float delta = 0;
-void renderScene()
-{
-    glClearColor(0.53f,	0.81f, 0.92f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glViewport(0, 0, retina_width, retina_height);
-
-	//initialize the model matrix
-	model = glm::mat4(1.0f);
-	modelLoc = glGetUniformLocation(myCustomShader.shaderProgram, "model");
-
-	myCustomShader.useShaderProgram();
-
-	//initialize the view matrix
-	glm::mat4 view = myCamera.getViewMatrix();
-	//send matrix data to shader
-	GLint viewLoc = glGetUniformLocation(myCustomShader.shaderProgram, "view");
-	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-
-	/*delta += 0.001;
-	model = glm::translate(model, glm::vec3(delta, 0, 0));*/
-
-	//create rotation matrix
-	model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::translate(model, glm::vec3(0, 0, 0));
-
-	
-
-	//send matrix data to vertex shader
-	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
-	/*glActiveTexture(GL_TEXTURE0);
-	glUniform1i(glGetUniformLocation(myCustomShader.shaderProgram, "diffuseTexture"), 0);
-	glBindTexture(GL_TEXTURE_2D, texture);*/
-
-	//for (int i = 0; i < 500; i++)
-	grass.Draw(myCustomShader);
-
-	model = glm::translate(model, glm::vec3(0, 10, 10));
-	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 1.0f));
-	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-	tree.Draw(myCustomShader);
-
-	/*glBindVertexArray(objectVAO);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);*/
-
-
+void initOpenGLState() {
+    glClearColor(0.7f, 0.7f, 0.7f, 1.0f);
+    glViewport(0, 0, myWindow.getWindowDimensions().width, myWindow.getWindowDimensions().height);
+    glEnable(GL_FRAMEBUFFER_SRGB);
+    glEnable(GL_DEPTH_TEST); // enable depth-testing
+    glDepthFunc(GL_LESS); // depth-testing interprets a smaller value as "closer"
+    glEnable(GL_CULL_FACE); // cull face
+    glCullFace(GL_BACK); // cull back face
+    glFrontFace(GL_CCW); // GL_CCW for counter clock-wise
 }
 
-void loadTriangleData() {
+void initModels() {
+    grass.LoadModel("models/grass/Grass.obj");
+    teapot.LoadModel("models/teapot/teapot20segUT.obj");
+}
 
-	glGenVertexArrays(1, &objectVAO);
+void initShaders() {
+    myBasicShader.loadShader(
+        "shaders/basic.vert",
+        "shaders/basic.frag");
+}
 
-	glBindVertexArray(objectVAO);
+void initUniforms() {
+    myBasicShader.useShaderProgram();
 
-	glGenBuffers(1, &verticesVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, verticesVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
+    //initialize model matri
+    //initialize the model matrix
+    model = glm::mat4(1.0f);
+    modelLoc = glGetUniformLocation(myBasicShader.shaderProgram, "model");
 
-	glGenBuffers(1, &verticesEBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, verticesEBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(vertexIndices), vertexIndices, GL_STATIC_DRAW);
+    // get view matrix for current camera
+    view = myCamera.getViewMatrix();
+    viewLoc = glGetUniformLocation(myBasicShader.shaderProgram, "view");
+    // send view matrix to shader
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
-	//vertex position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
+    // compute normal matrix for teapot
+    normalMatrix = glm::mat3(glm::inverseTranspose(view * model));
+    normalMatrixLoc = glGetUniformLocation(myBasicShader.shaderProgram, "normalMatrix");
 
-	//vertex texture
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(2);
+    // create projection matrix
+    projection = glm::perspective(glm::radians(55.0f),
+        (float)myWindow.getWindowDimensions().width / (float)myWindow.getWindowDimensions().height,
+        0.1f, 1000.0f);
+    projectionLoc = glGetUniformLocation(myBasicShader.shaderProgram, "projection");
+    // send projection matrix to shader
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-	glBindVertexArray(0);
+    //set the light direction (direction towards the light)
+    lightDir = glm::vec3(0.0f, 1.0f, 1.0f);
+    lightDirLoc = glGetUniformLocation(myBasicShader.shaderProgram, "lightDir");
+    // send light dir to shader
+    glUniform3fv(lightDirLoc, 1, glm::value_ptr(lightDir));
+
+    //set light color
+    lightColor = glm::vec3(1.0f, 1.0f, 1.0f); //white light
+    lightColorLoc = glGetUniformLocation(myBasicShader.shaderProgram, "lightColor");
+    // send light color to shader
+    glUniform3fv(lightColorLoc, 1, glm::value_ptr(lightColor));
+}
+
+void renderTeapot(gps::Shader shader) {
+    // select active shader program
+    shader.useShaderProgram();
+
+    model = glm::translate(model, glm::vec3(0, 10, 20));
+    model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 1.0f));
+    model = glm::scale(model, glm::vec3(20.0f, 20.0f, 20.0f));
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+    //send teapot normal matrix data to shader
+    glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, glm::value_ptr(normalMatrix));
+
+    // draw teapot
+    teapot.Draw(shader);
+}
+
+void renderGrass(gps::Shader shader) {
+
+    // select active shader program
+    shader.useShaderProgram();
+
+    //send grass model matrix data to shader
+    model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::translate(model, glm::vec3(0, 0, 0));
+    //send matrix data to vertex shader
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+    //send grass normal matrix data to shader
+    glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, glm::value_ptr(normalMatrix));
+
+    // draw grass
+    grass.Draw(shader);
+}
+
+void renderScene() {
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    //render the scene
+    model = glm::mat4(1.0f);
+    modelLoc = glGetUniformLocation(myBasicShader.shaderProgram, "model");
+
+    // render the elements of the scene
+    renderGrass(myBasicShader);
+    renderTeapot(myBasicShader);
+
 }
 
 void cleanup() {
-
-    // GPU cleanup
-    glDeleteBuffers(1, &verticesVBO);
-    glDeleteBuffers(1, &verticesEBO);
-    glDeleteVertexArrays(1, &objectVAO);
-    glDeleteTextures(1, &texture);
-
-    glfwDestroyWindow(glWindow);
-    //close GL context and any other GLFW resources
-    glfwTerminate();
+    myWindow.Delete();
+    //cleanup code for your own data
 }
 
-int main(int argc, const char * argv[]) {
+int main(int argc, const char* argv[]) {
 
-	if (!initOpenGLWindow()) {
-	    glfwTerminate();
-	    return 1;
-	}
+    try {
+        initOpenGLWindow();
+    }
+    catch (const std::exception& e) {
+        std::cerr << e.what() << std::endl;
+        return EXIT_FAILURE;
+    }
 
-	glEnable(GL_DEPTH_TEST); // enable depth-testing
-	glDepthFunc(GL_LESS); // depth-testing interprets a smaller value as "closer"
-	glEnable(GL_CULL_FACE); // cull face
-	glCullFace(GL_BACK); // cull back face
-	glFrontFace(GL_CCW); // GL_CCW for counter clock-wise
+    initOpenGLState();
+    initModels();
+    initShaders();
+    initUniforms();
+    setWindowCallbacks();
 
-	myCustomShader.loadShader("shaders/shaderStart.vert", "shaders/shaderStart.frag");
-	myCustomShader.useShaderProgram();
-
-	//initialize the projection matrix
-	glm::mat4 projection = glm::perspective(glm::radians(55.0f), (float)retina_width / (float)retina_height, 0.1f, 1000.0f);
-	//send matrix data to shader
-	GLint projLoc = glGetUniformLocation(myCustomShader.shaderProgram, "projection");
-	glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-	//argument 1 = obj file; argument 2 = textures folder
-	grass.LoadModel("objects/Grass.obj", "textures/");
-	tree.LoadModel("objects/Tree.obj", "textures/");
-
-
-	while (!glfwWindowShouldClose(glWindow)) {
+    glCheckError();
+    // application loop
+    while (!glfwWindowShouldClose(myWindow.getWindow())) {
         processMovement();
-		renderScene();
+        renderScene();
 
-		glfwPollEvents();
-		glfwSwapBuffers(glWindow);
-	}
+        glfwPollEvents();
+        glfwSwapBuffers(myWindow.getWindow());
 
-	cleanup();
+        glCheckError();
+    }
 
-	return 0;
+    cleanup();
+
+    return EXIT_SUCCESS;
 }

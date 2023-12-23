@@ -1,7 +1,8 @@
-C:\GitHub\OpenGL project\Camera.cpp;C:\GitHub\OpenGL project\x64\Debug\Camera.obj
-C:\GitHub\OpenGL project\main.cpp;C:\GitHub\OpenGL project\x64\Debug\main.obj
-C:\GitHub\OpenGL project\Mesh.cpp;C:\GitHub\OpenGL project\x64\Debug\Mesh.obj
-C:\GitHub\OpenGL project\Model3D.cpp;C:\GitHub\OpenGL project\x64\Debug\Model3D.obj
-C:\GitHub\OpenGL project\Shader.cpp;C:\GitHub\OpenGL project\x64\Debug\Shader.obj
-C:\GitHub\OpenGL project\stb_image.cpp;C:\GitHub\OpenGL project\x64\Debug\stb_image.obj
-C:\GitHub\OpenGL project\tiny_obj_loader.cpp;C:\GitHub\OpenGL project\x64\Debug\tiny_obj_loader.obj
+C:\GitHub\PG project template\Camera.cpp;C:\GitHub\PG project template\x64\Debug\Camera.obj
+C:\GitHub\PG project template\main.cpp;C:\GitHub\PG project template\x64\Debug\main.obj
+C:\GitHub\PG project template\Mesh.cpp;C:\GitHub\PG project template\x64\Debug\Mesh.obj
+C:\GitHub\PG project template\Model3D.cpp;C:\GitHub\PG project template\x64\Debug\Model3D.obj
+C:\GitHub\PG project template\Shader.cpp;C:\GitHub\PG project template\x64\Debug\Shader.obj
+C:\GitHub\PG project template\stb_image.cpp;C:\GitHub\PG project template\x64\Debug\stb_image.obj
+C:\GitHub\PG project template\tiny_obj_loader.cpp;C:\GitHub\PG project template\x64\Debug\tiny_obj_loader.obj
+C:\GitHub\PG project template\Window.cpp;C:\GitHub\PG project template\x64\Debug\Window.obj
