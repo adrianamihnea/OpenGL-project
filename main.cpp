@@ -23,7 +23,9 @@
 // window
 gps::Window myWindow;
 
-// matrices
+const unsigned int SHADOW_WIDTH = 2048;
+const unsigned int SHADOW_HEIGHT = 2048;
+
 glm::mat4 model;
 glm::mat4 modelTeapot;
 glm::mat4 view;
@@ -43,6 +45,7 @@ GLint normalMatrixLoc;
 GLint lightDirLoc;
 GLint lightColorLoc;
 
+
 // camera
 //gps::Camera myCamera(
 //    glm::vec3(0.0f, 0.0f, 3.0f),
@@ -50,17 +53,23 @@ GLint lightColorLoc;
 //    glm::vec3(0.0f, 1.0f, 0.0f));
 gps::Camera myCamera(glm::vec3(-75.0f, -50.0f, -30.0f), glm::vec3(0.0f, 5.0f, -10.0f), glm::vec3(0.0f, 0.0f, -1.0f));
 
-GLfloat cameraSpeed = 0.1f;
+GLfloat cameraSpeed = 1.0f;
 
 GLboolean pressedKeys[1024];
 
 // models
 gps::Model3D teapot;
 gps::Model3D grass;
+gps::Model3D table;
+gps::Model3D sakura_tree;
+gps::Model3D tree;
 GLfloat angle;
 
 // shaders
 gps::Shader myBasicShader;
+//gps::Shader depthMapShader;
+
+GLuint shadowMapFBO;
 
 GLenum glCheckError_(const char* file, int line)
 {
@@ -196,18 +205,24 @@ void initOpenGLState() {
 void initModels() {
     grass.LoadModel("models/grass/Grass.obj");
     teapot.LoadModel("models/teapot/teapot20segUT.obj");
+    table.LoadModel("models/table/table.obj");
+    sakura_tree.LoadModel("models/sakura_tree/Sakura_tree.obj");
+    tree.LoadModel("models/tree/tree.obj");
 }
 
 void initShaders() {
     myBasicShader.loadShader(
         "shaders/basic.vert",
         "shaders/basic.frag");
+    /*depthMapShader.loadShader(
+        "shaders/depthMap.vert",
+        "shaders/depthMap.frag"
+    );*/
 }
 
 void initUniforms() {
     myBasicShader.useShaderProgram();
 
-    //initialize model matri
     //initialize the model matrix
     model = glm::mat4(1.0f);
     modelLoc = glGetUniformLocation(myBasicShader.shaderProgram, "model");
@@ -243,13 +258,53 @@ void initUniforms() {
     glUniform3fv(lightColorLoc, 1, glm::value_ptr(lightColor));
 }
 
+//void initFBO() {
+//    //generate FBO ID
+//    glGenFramebuffers(1, &shadowMapFBO);
+//
+//    GLuint depthMapTexture;
+//    //create depth texture for FBO
+//    glGenTextures(1, &depthMapTexture);
+//    glBindTexture(GL_TEXTURE_2D, depthMapTexture);
+//    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+//        SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//    float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+//    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+//
+//    //attach texture to FBO
+//    glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
+//    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTexture,
+//        0);
+//
+//    glDrawBuffer(GL_NONE);
+//    glReadBuffer(GL_NONE);
+//
+//    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//
+//}
+
+//glm::mat4 computeLightSpaceTrMatrix() {
+//    // Return the light-space transformation matrix
+//
+//    glm::mat4 lightView = glm::lookAt(lightDir, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+//    const GLfloat near_plane = 0.1f, far_plane = 6.0f;
+//    glm::mat4 lightProjection = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, near_plane, far_plane);
+//    glm::mat4 lightSpaceTrMatrix = lightProjection * lightView;
+//
+//    return lightSpaceTrMatrix;
+//}
+
 void renderTeapot(gps::Shader shader) {
     // select active shader program
     shader.useShaderProgram();
 
-    model = glm::translate(model, glm::vec3(0, 10, 20));
-    model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 1.0f));
-    model = glm::scale(model, glm::vec3(20.0f, 20.0f, 20.0f));
+    model = glm::translate(model, glm::vec3(0, 1.9, 0));
+    model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 1.0f));
+    model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
     //send teapot normal matrix data to shader
@@ -278,6 +333,54 @@ void renderGrass(gps::Shader shader) {
     grass.Draw(shader);
 }
 
+void renderTable(gps::Shader shader) {
+    // select active shader program
+    shader.useShaderProgram();
+
+    model = glm::translate(model, glm::vec3(0, 10, 10));
+    model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 1.0f));
+    model = glm::scale(model, glm::vec3(20.0f, 20.0f, 20.0f));
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+    //send table normal matrix data to shader
+    glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, glm::value_ptr(normalMatrix));
+
+    // draw teapot
+    table.Draw(shader);
+}
+
+void renderSakuraTree(gps::Shader shader) {
+    // select active shader program
+    shader.useShaderProgram();
+
+    model = glm::translate(model, glm::vec3(10, -2, 0.1));
+    //model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 1.0f));
+    model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+    //send sakura tree normal matrix data to shader
+    glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, glm::value_ptr(normalMatrix));
+
+    // draw teapot
+    sakura_tree.Draw(shader);
+}
+
+void renderTree(gps::Shader shader) {
+    // select active shader program
+    shader.useShaderProgram();
+
+    model = glm::translate(model, glm::vec3(-20, -2, 1));
+    //model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 1.0f));
+    model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+    //send sakura tree normal matrix data to shader
+    glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, glm::value_ptr(normalMatrix));
+
+    // draw teapot
+    tree.Draw(shader);
+}
+
 void renderScene() {
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -286,9 +389,24 @@ void renderScene() {
     model = glm::mat4(1.0f);
     modelLoc = glGetUniformLocation(myBasicShader.shaderProgram, "model");
 
+    //render the scene to the depth buffer
+   /* depthMapShader.useShaderProgram();
+    glUniformMatrix4fv(glGetUniformLocation(depthMapShader.shaderProgram, "lightSpaceTrMatrix"),
+        1,
+        GL_FALSE,
+        glm::value_ptr(computeLightSpaceTrMatrix()));
+    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+    glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
+    glClear(GL_DEPTH_BUFFER_BIT);*/
+
     // render the elements of the scene
     renderGrass(myBasicShader);
+    renderTable(myBasicShader);
     renderTeapot(myBasicShader);
+    renderSakuraTree(myBasicShader);
+    renderTree(myBasicShader);
+
+    //glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 }
 

@@ -1,0 +1,36 @@
+newmtl Leaves1Mtl
+Material Color
+Ka 0.0169881 0.215764 0.0600316
+Kd 0.0169881 0.215764 0.0600316
+Ks 0.000466339 0.00592294 0.00164793 
+
+d 1
+
+Ns 0
+
+map_Ka Leaves1_diff.png
+map_Kd Leaves1_diff.png
+map_d Leaves1_diff.png
+
+map_Bump Leaves1_nmap.png
+
+map_Ns Leaves1_spec.png
+
+newmtl Bark1Mtl
+Material Color
+Ka 0.151058 0.0962661 0.0677246
+Kd 0.151058 0.0962661 0.0677246
+Ks 0.0100705 0.00641774 0.00451497 
+
+d 1
+
+Ns 0
+
+map_Ka Bark1_diff.png
+map_Kd Bark1_diff.png
+map_d Bark1_diff.png
+
+map_Bump Bark1_nmap.png
+
+map_Ns Bark1_spec.png
+

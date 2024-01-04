@@ -1,0 +1,32 @@
+newmtl Leaves1Mtl
+Material Color
+Ka 1 1 1
+Kd 1 1 1
+Ks 0.027451 0.027451 0.027451 
+
+d 0.603922
+
+Ns 0
+
+map_Ka Leaves1_diff.png
+map_Kd Leaves1_diff.png
+map_d Leaves1_diff.png
+
+newmtl Trunk1Mtl
+Material Color
+Ka 0.22331 0.144972 0.108711
+Kd 0.22331 0.144972 0.108711
+Ks 0.0148874 0.00966481 0.00724741 
+
+d 1
+
+Ns 0
+
+map_Ka Trunk1_diff.png
+map_Kd Trunk1_diff.png
+map_d Trunk1_diff.png
+
+map_Bump Trunk1_nmap.png
+
+map_Ns Trunk1_spec.png
+
