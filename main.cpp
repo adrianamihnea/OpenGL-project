@@ -27,7 +27,7 @@ const unsigned int SHADOW_WIDTH = 2048;
 const unsigned int SHADOW_HEIGHT = 2048;
 
 glm::mat4 model;
-glm::mat4 modelTeapot;
+glm::mat4 modelBlenderScene;
 glm::mat4 view;
 glm::mat4 projection;
 glm::mat3 normalMatrix;
@@ -47,27 +47,27 @@ GLint lightColorLoc;
 
 
 // camera
-//gps::Camera myCamera(
-//    glm::vec3(0.0f, 0.0f, 3.0f),
-//    glm::vec3(0.0f, 0.0f, -10.0f),
-//    glm::vec3(0.0f, 1.0f, 0.0f));
-gps::Camera myCamera(glm::vec3(-75.0f, -50.0f, -30.0f), glm::vec3(0.0f, 5.0f, -10.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+gps::Camera myCamera(
+    glm::vec3(-38.381f, -0.05413f, 19.596f), 
+    glm::vec3(-38.399f, -0.56639f, 16.3f), 
+    glm::vec3(0.0f, 0.0f, -1.0f)
+);
 
-GLfloat cameraSpeed = 1.0f;
+GLfloat cameraSpeed = 0.01f;
+//GLfloat cameraSpeed = 5.0f;
 
 GLboolean pressedKeys[1024];
 
 // models
-gps::Model3D teapot;
-gps::Model3D grass;
-gps::Model3D table;
-gps::Model3D sakura_tree;
-gps::Model3D tree;
+gps::Model3D scene;
 GLfloat angle;
+GLfloat angleY;
 
 // shaders
 gps::Shader myBasicShader;
 //gps::Shader depthMapShader;
+float yaw = -90.0f;
+float pitch = -90.0f;
 
 GLuint shadowMapFBO;
 
@@ -130,7 +130,7 @@ void processMovement() {
         view = myCamera.getViewMatrix();
         myBasicShader.useShaderProgram();
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-        // compute normal matrix for teapot
+        // compute normal matrix
         normalMatrix = glm::mat3(glm::inverseTranspose(view * model));
     }
 
@@ -140,7 +140,7 @@ void processMovement() {
         view = myCamera.getViewMatrix();
         myBasicShader.useShaderProgram();
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-        // compute normal matrix for teapot
+        // compute normal matrix
         normalMatrix = glm::mat3(glm::inverseTranspose(view * model));
     }
 
@@ -150,7 +150,7 @@ void processMovement() {
         view = myCamera.getViewMatrix();
         myBasicShader.useShaderProgram();
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-        // compute normal matrix for teapot
+        // compute normal matrix
         normalMatrix = glm::mat3(glm::inverseTranspose(view * model));
     }
 
@@ -165,20 +165,25 @@ void processMovement() {
     }
 
     if (pressedKeys[GLFW_KEY_Q]) {
-        angle -= 1.0f;
-        // update model matrix for teapot
-        model = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0, 1, 0));
-        // update normal matrix for teapot
-        normalMatrix = glm::mat3(glm::inverseTranspose(view * model));
+        angleY -= 0.2f;
+        // update model matrix
+        model = glm::rotate(glm::mat4(1.0f), glm::radians(angleY), glm::vec3(0, 1, 0));
+        // update normal matrix
+        //normalMatrix = glm::mat3(glm::inverseTranspose(view * model));
     }
 
     if (pressedKeys[GLFW_KEY_E]) {
-        angle += 1.0f;
-        // update model matrix for teapot
-        model = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0, 1, 0));
-        // update normal matrix for teapot
-        normalMatrix = glm::mat3(glm::inverseTranspose(view * model));
+        angleY += 0.2f;
+        // update model matrix
+        model = glm::rotate(glm::mat4(1.0f), glm::radians(angleY), glm::vec3(0, 1, 0));
+        // update normal matrix
+       // normalMatrix = glm::mat3(glm::inverseTranspose(view * model));
     }
+
+}
+
+void processRotation() {
+    myCamera.rotate(pitch, yaw);
 }
 
 void initOpenGLWindow() {
@@ -203,11 +208,7 @@ void initOpenGLState() {
 }
 
 void initModels() {
-    grass.LoadModel("models/grass/Grass.obj");
-    teapot.LoadModel("models/teapot/teapot20segUT.obj");
-    table.LoadModel("models/table/table.obj");
-    sakura_tree.LoadModel("models/sakura_tree/Sakura_tree.obj");
-    tree.LoadModel("models/tree/tree.obj");
+    scene.LoadModel("models/SCENE/scene.obj");
 }
 
 void initShaders() {
@@ -298,87 +299,23 @@ void initUniforms() {
 //    return lightSpaceTrMatrix;
 //}
 
-void renderTeapot(gps::Shader shader) {
+
+void renderBlenderScene(gps::Shader shader) {
+
     // select active shader program
     shader.useShaderProgram();
 
-    model = glm::translate(model, glm::vec3(0, 1.9, 0));
+   /* model = glm::translate(model, glm::vec3(0, 1.9, 0));
     model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 1.0f));
-    model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+    model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));*/
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
-    //send teapot normal matrix data to shader
+    //send scene normal matrix data to shader
     glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, glm::value_ptr(normalMatrix));
 
-    // draw teapot
-    teapot.Draw(shader);
-}
+    // draw scene
+    scene.Draw(shader);
 
-void renderGrass(gps::Shader shader) {
-
-    // select active shader program
-    shader.useShaderProgram();
-
-    //send grass model matrix data to shader
-    model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::translate(model, glm::vec3(0, 0, 0));
-    //send matrix data to vertex shader
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
-    //send grass normal matrix data to shader
-    glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, glm::value_ptr(normalMatrix));
-
-    // draw grass
-    grass.Draw(shader);
-}
-
-void renderTable(gps::Shader shader) {
-    // select active shader program
-    shader.useShaderProgram();
-
-    model = glm::translate(model, glm::vec3(0, 10, 10));
-    model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 1.0f));
-    model = glm::scale(model, glm::vec3(20.0f, 20.0f, 20.0f));
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
-    //send table normal matrix data to shader
-    glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, glm::value_ptr(normalMatrix));
-
-    // draw teapot
-    table.Draw(shader);
-}
-
-void renderSakuraTree(gps::Shader shader) {
-    // select active shader program
-    shader.useShaderProgram();
-
-    model = glm::translate(model, glm::vec3(10, -2, 0.1));
-    //model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 1.0f));
-    model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
-    //send sakura tree normal matrix data to shader
-    glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, glm::value_ptr(normalMatrix));
-
-    // draw teapot
-    sakura_tree.Draw(shader);
-}
-
-void renderTree(gps::Shader shader) {
-    // select active shader program
-    shader.useShaderProgram();
-
-    model = glm::translate(model, glm::vec3(-20, -2, 1));
-    //model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 1.0f));
-    model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
-    //send sakura tree normal matrix data to shader
-    glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, glm::value_ptr(normalMatrix));
-
-    // draw teapot
-    tree.Draw(shader);
 }
 
 void renderScene() {
@@ -386,8 +323,8 @@ void renderScene() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     //render the scene
-    model = glm::mat4(1.0f);
-    modelLoc = glGetUniformLocation(myBasicShader.shaderProgram, "model");
+    //model = glm::mat4(1.0f);
+    //modelLoc = glGetUniformLocation(myBasicShader.shaderProgram, "model");
 
     //render the scene to the depth buffer
    /* depthMapShader.useShaderProgram();
@@ -400,11 +337,12 @@ void renderScene() {
     glClear(GL_DEPTH_BUFFER_BIT);*/
 
     // render the elements of the scene
-    renderGrass(myBasicShader);
+    /*renderGrass(myBasicShader);
     renderTable(myBasicShader);
     renderTeapot(myBasicShader);
     renderSakuraTree(myBasicShader);
-    renderTree(myBasicShader);
+    renderTree(myBasicShader);*/
+    renderBlenderScene(myBasicShader);
 
     //glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -435,6 +373,7 @@ int main(int argc, const char* argv[]) {
     // application loop
     while (!glfwWindowShouldClose(myWindow.getWindow())) {
         processMovement();
+        //processRotation();
         renderScene();
 
         glfwPollEvents();

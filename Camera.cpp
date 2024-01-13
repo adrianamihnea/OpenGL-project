@@ -22,19 +22,22 @@ namespace gps {
         glm::vec3 cameraRight = glm::normalize(glm::cross(cameraFront, cameraUpDirection));
 
         switch (direction) {
-        case MOVE_FORWARD:
-            cameraPosition += cameraFront * velocity;
-            break;
-        case MOVE_BACKWARD:
-            cameraPosition -= cameraFront * velocity;
+        case MOVE_RIGHT:
+            this->cameraPosition.x += speed;
+            this->cameraTarget.x += speed;
             break;
         case MOVE_LEFT:
-            cameraPosition -= cameraRight * velocity;
+            this->cameraPosition.x -= speed;
+            this->cameraTarget.x -= speed;
             break;
-        case MOVE_RIGHT:
-            cameraPosition += cameraRight * velocity;
+        case MOVE_FORWARD:
+            this->cameraPosition.z -= speed;
+            this->cameraTarget.z -= speed;
             break;
-            // Add other directions as needed
+        case MOVE_BACKWARD:
+            this->cameraPosition.z += speed;
+            //this->cameraTarget.z += speed;
+            break;
         }
     }
 
