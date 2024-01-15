@@ -31,10 +31,13 @@ glm::mat4 modelBlenderScene;
 glm::mat4 view;
 glm::mat4 projection;
 glm::mat3 normalMatrix;
+glm::mat4 lightRotation;
+glm::mat4 sunLightRotation;
 
 // light parameters
 glm::vec3 lightDir;
 glm::vec3 lightColor;
+glm::vec3 sunLight;
 
 // shader uniform locations
 GLint modelLoc;
@@ -44,15 +47,17 @@ GLint projectionLoc;
 GLint normalMatrixLoc;
 GLint lightDirLoc;
 GLint lightColorLoc;
+GLuint sunLightLocation;
 
 
 // camera
 gps::Camera myCamera(
     glm::vec3(-38.381f, -0.05413f, 19.596f), 
     glm::vec3(-38.399f, -0.56639f, 16.3f), 
-    glm::vec3(0.0f, 0.0f, -1.0f)
+    glm::vec3(0.0f, 1.0f, 0.0f)
 );
 
+GLfloat mouseSpeed = 0.1f;
 GLfloat cameraSpeed = 0.01f;
 //GLfloat cameraSpeed = 5.0f;
 
@@ -63,13 +68,23 @@ gps::Model3D scene;
 GLfloat angle;
 GLfloat angleY;
 
+bool startVisualisation = false;
+float sceneAngle = 0.0f;
+
+// lights
+float angleDirectionalLight = 0.0f;
+float anglePointLight = 0.0f;
+
 // shaders
 gps::Shader myBasicShader;
 //gps::Shader depthMapShader;
-float yaw = -90.0f;
-float pitch = -90.0f;
+float previousX = 400, previousY = 300;
+float yaw = -90.0f, pitch;
 
 GLuint shadowMapFBO;
+
+bool directionalLightEnabled = true;
+bool pointLightEnabled = false;
 
 GLenum glCheckError_(const char* file, int line)
 {
@@ -120,7 +135,20 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
 }
 
 void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
-    //TODO
+
+    GLfloat X = xpos - previousX;
+    GLfloat Y = previousY - ypos;
+
+    previousX = xpos;
+    previousY = ypos;
+
+    X *= mouseSpeed;
+    Y *= mouseSpeed;
+
+    yaw += X;
+    pitch += Y;
+
+    myCamera.rotate(pitch, yaw);
 }
 
 void processMovement() {
@@ -180,6 +208,80 @@ void processMovement() {
        // normalMatrix = glm::mat3(glm::inverseTranspose(view * model));
     }
 
+    if (pressedKeys[GLFW_KEY_J]) { // MOVE DOWN
+        myCamera.move(gps::MOVE_DOWN, cameraSpeed);
+        view = myCamera.getViewMatrix();
+        myBasicShader.useShaderProgram();
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        normalMatrix = glm::mat3(glm::inverseTranspose(view * model));
+    }
+
+    if (pressedKeys[GLFW_KEY_U]) { // MOVE UP
+        myCamera.move(gps::MOVE_UP, cameraSpeed);
+        view = myCamera.getViewMatrix();
+        myBasicShader.useShaderProgram();
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        normalMatrix = glm::mat3(glm::inverseTranspose(view * model));
+    }
+
+    // -- VIEWS
+
+    if (pressedKeys[GLFW_KEY_Y]) { // SOLID VIEW
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+
+    if (pressedKeys[GLFW_KEY_T]) { // WIREFRAME VIEW
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
+
+    if (pressedKeys[GLFW_KEY_G]) { // POLYGONAL VIEW
+        glDisable(GL_POINT_SMOOTH);
+        glEnable(GL_MULTISAMPLE);
+    }
+
+    if (pressedKeys[GLFW_KEY_H]) { // SMOOTH VIEW
+        glDisable(GL_MULTISAMPLE);
+        glEnable(GL_POINT_SMOOTH);
+    }
+   
+    // -- end VIEWS
+
+    // SCENE VIZUALIZATION
+
+     // UNIVERSE VISUALISATION
+
+    if (pressedKeys[GLFW_KEY_P]) { // START VISUALISATION
+        startVisualisation = true;
+    }
+
+    if (pressedKeys[GLFW_KEY_O]) { // STOP VISUALIZATION
+        startVisualisation = false;
+    }
+
+    // end SCENE VIZUALIZATION
+
+    // LIGHTS
+
+    if (pressedKeys[GLFW_KEY_K]) { // directional light
+        directionalLightEnabled = !directionalLightEnabled;
+        glUniform1i(glGetUniformLocation(myBasicShader.shaderProgram, "directionalLightEnabled"), directionalLightEnabled);
+    }
+
+    if (pressedKeys[GLFW_KEY_L]) { // point light
+        pointLightEnabled = !pointLightEnabled;
+        glUniform1i(glGetUniformLocation(myBasicShader.shaderProgram, "pointLightEnabled"), pointLightEnabled);
+    }
+
+    // end LIGHTS
+}
+
+void viewSceneAnimation() {
+
+    if (startVisualisation) {
+        sceneAngle += 0.2f;
+        myCamera.startVisualization(sceneAngle);
+
+    }
 }
 
 void processRotation() {
@@ -225,7 +327,8 @@ void initUniforms() {
     myBasicShader.useShaderProgram();
 
     //initialize the model matrix
-    model = glm::mat4(1.0f);
+    //model = glm::mat4(1.0f);
+    model = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
     modelLoc = glGetUniformLocation(myBasicShader.shaderProgram, "model");
 
     // get view matrix for current camera
@@ -247,7 +350,8 @@ void initUniforms() {
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
     //set the light direction (direction towards the light)
-    lightDir = glm::vec3(0.0f, 1.0f, 1.0f);
+    lightDir = glm::vec3(1.0f, 0.0f, 0.0f); // originally on Y
+    //lightRotation = glm::rotate(glm::mat4(1.0f), glm::radians(angleDirectionalLight), glm::vec3(0.0f, 0.0f, 1.0f));
     lightDirLoc = glGetUniformLocation(myBasicShader.shaderProgram, "lightDir");
     // send light dir to shader
     glUniform3fv(lightDirLoc, 1, glm::value_ptr(lightDir));
@@ -257,47 +361,16 @@ void initUniforms() {
     lightColorLoc = glGetUniformLocation(myBasicShader.shaderProgram, "lightColor");
     // send light color to shader
     glUniform3fv(lightColorLoc, 1, glm::value_ptr(lightColor));
+
+    // point light, on the sun
+    sunLight = glm::vec3(10.0, 10.0, 10.0);
+    sunLightRotation = glm::rotate(glm::mat4(1.0f), glm::radians(angleDirectionalLight), glm::vec3(0.0f, 0.0f, 1.0f));
+    sunLightLocation = glGetUniformLocation(myBasicShader.shaderProgram, "lightPosEye");
+    glUniform3fv(sunLightLocation, 1, glm::value_ptr(sunLight));
+
+   /* lightShader.useShaderProgram();
+    glUniformMatrix4fv(glGetUniformLocation(lightShader.shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));*/
 }
-
-//void initFBO() {
-//    //generate FBO ID
-//    glGenFramebuffers(1, &shadowMapFBO);
-//
-//    GLuint depthMapTexture;
-//    //create depth texture for FBO
-//    glGenTextures(1, &depthMapTexture);
-//    glBindTexture(GL_TEXTURE_2D, depthMapTexture);
-//    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
-//        SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-//    float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-//    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-//
-//    //attach texture to FBO
-//    glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
-//    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTexture,
-//        0);
-//
-//    glDrawBuffer(GL_NONE);
-//    glReadBuffer(GL_NONE);
-//
-//    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//
-//}
-
-//glm::mat4 computeLightSpaceTrMatrix() {
-//    // Return the light-space transformation matrix
-//
-//    glm::mat4 lightView = glm::lookAt(lightDir, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-//    const GLfloat near_plane = 0.1f, far_plane = 6.0f;
-//    glm::mat4 lightProjection = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, near_plane, far_plane);
-//    glm::mat4 lightSpaceTrMatrix = lightProjection * lightView;
-//
-//    return lightSpaceTrMatrix;
-//}
 
 
 void renderBlenderScene(gps::Shader shader) {

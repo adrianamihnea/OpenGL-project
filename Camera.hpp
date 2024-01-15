@@ -8,8 +8,8 @@
 
 namespace gps {
     
-    enum MOVE_DIRECTION {MOVE_FORWARD, MOVE_BACKWARD, MOVE_RIGHT, MOVE_LEFT};
-    
+    enum MOVE_DIRECTION { MOVE_FORWARD, MOVE_BACKWARD, MOVE_RIGHT, MOVE_LEFT, MOVE_UP, MOVE_DOWN };
+
     class Camera
     {
     public:
@@ -23,6 +23,10 @@ namespace gps {
         //yaw - camera rotation around the y axis
         //pitch - camera rotation around the x axis
         void rotate(float pitch, float yaw);
+
+        // visualization function
+        void startVisualization(float angle);
+
         
     private:
         glm::vec3 cameraPosition;

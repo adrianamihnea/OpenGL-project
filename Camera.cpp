@@ -7,6 +7,11 @@ namespace gps {
         this->cameraPosition = cameraPosition;
         this->cameraTarget = cameraTarget;
         this->cameraUpDirection = cameraUp;
+
+        this->cameraFrontDirection = glm::normalize(cameraPosition - cameraTarget);
+        this->cameraRightDirection = glm::normalize(glm::cross(cameraUpDirection, cameraFrontDirection));
+        this->cameraUpDirection = glm::cross(cameraFrontDirection, cameraRightDirection);
+
     }
 
     // Return the view matrix, using the glm::lookAt() function
@@ -36,7 +41,12 @@ namespace gps {
             break;
         case MOVE_BACKWARD:
             this->cameraPosition.z += speed;
-            //this->cameraTarget.z += speed;
+            break;
+        case MOVE_UP:
+            cameraPosition += cameraUpDirection * speed;
+            break;
+        case MOVE_DOWN:
+            cameraPosition -= cameraUpDirection * speed;
             break;
         }
     }
@@ -45,25 +55,23 @@ namespace gps {
     // yaw - camera rotation around the y-axis
     // pitch - camera rotation around the x-axis
     void Camera::rotate(float pitch, float yaw) {
-        // Adjust pitch (rotation around the x-axis)
-        pitch = glm::radians(pitch);
-        const float maxPitch = 89.0f;  // Set your maximum pitch angle here
-        pitch = glm::clamp(pitch, -maxPitch, maxPitch);  // Limit pitch angle
+        glm::vec3 front;
+        front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+        front.y = sin(glm::radians(pitch));
+        front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
 
-        glm::mat4 pitchMatrix = glm::rotate(glm::mat4(1.0f), pitch, cameraRightDirection);
-        cameraUpDirection = glm::vec3(pitchMatrix * glm::vec4(cameraUpDirection, 0.0f));
-        glm::vec3 rotatedFront = glm::vec3(pitchMatrix * glm::vec4(cameraTarget - cameraPosition, 0.0f));
+        cameraFrontDirection = glm::normalize(front);
+        cameraRightDirection = glm::normalize(glm::cross(cameraFrontDirection, glm::vec3(0.0f, 1.0f, 0.0f)));
+        cameraUpDirection = glm::normalize(glm::cross(cameraRightDirection, cameraFrontDirection));
+    }
 
-        // Adjust yaw (rotation around the y-axis)
-        yaw = glm::radians(yaw);
-        glm::mat4 yawMatrix = glm::rotate(glm::mat4(1.0f), yaw, glm::vec3(0.0f, 1.0f, 0.0f));
-        cameraRightDirection = glm::vec3(yawMatrix * glm::vec4(cameraRightDirection, 0.0f));
-        cameraUpDirection = glm::vec3(yawMatrix * glm::vec4(cameraUpDirection, 0.0f));
-        glm::vec3 finalFront = glm::vec3(yawMatrix * glm::vec4(rotatedFront, 0.0f));
+    void Camera::startVisualization(float angle) {
 
-        // Update the cameraTarget position
-        cameraTarget = cameraPosition + finalFront;
-        // namespace gps
+        this->cameraPosition = glm::vec3(-50.0, 700.0, -48.0); // set the camera position up in the sky   
+        this->cameraTarget = glm::vec3(0.0, 1.0, 0.0); // look on the y axis
+        glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0, 1, 0)); // create the rotationMatrix with the universeAngle value
+        cameraPosition = glm::vec4(rotationMatrix * glm::vec4(this->cameraPosition, 1)); // update camera position with the rotation
+        cameraFrontDirection = glm::normalize(cameraTarget - cameraPosition); // update the front direction to view the scene in front
     }
 
 }

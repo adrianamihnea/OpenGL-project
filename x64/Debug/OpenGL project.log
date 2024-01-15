@@ -1,4 +1,8 @@
 ﻿  main.cpp
+C:\Users\addam\OneDrive\Desktop\PG PROJECT\main.cpp(139,15): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\addam\OneDrive\Desktop\PG PROJECT\main.cpp(140,15): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\addam\OneDrive\Desktop\PG PROJECT\main.cpp(142,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\addam\OneDrive\Desktop\PG PROJECT\main.cpp(143,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 glfw3.lib(window.obj) : warning LNK4099: PDB '' was not found with 'glfw3.lib(window.obj)' or at ''; linking object as if no debug info
 glfw3.lib(input.obj) : warning LNK4099: PDB '' was not found with 'glfw3.lib(input.obj)' or at ''; linking object as if no debug info
 glfw3.lib(context.obj) : warning LNK4099: PDB '' was not found with 'glfw3.lib(context.obj)' or at ''; linking object as if no debug info
