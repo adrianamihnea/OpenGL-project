@@ -59,7 +59,6 @@ gps::Camera myCamera(
 
 GLfloat mouseSpeed = 0.1f;
 GLfloat cameraSpeed = 0.01f;
-//GLfloat cameraSpeed = 5.0f;
 
 GLboolean pressedKeys[1024];
 
@@ -77,11 +76,8 @@ float anglePointLight = 0.0f;
 
 // shaders
 gps::Shader myBasicShader;
-//gps::Shader depthMapShader;
 float previousX = 400, previousY = 300;
 float yaw = -90.0f, pitch;
-
-GLuint shadowMapFBO;
 
 bool directionalLightEnabled = true;
 bool pointLightEnabled = false;
@@ -249,8 +245,6 @@ void processMovement() {
 
     // SCENE VIZUALIZATION
 
-     // UNIVERSE VISUALISATION
-
     if (pressedKeys[GLFW_KEY_P]) { // START VISUALISATION
         startVisualisation = true;
     }
@@ -323,17 +317,12 @@ void initShaders() {
     myBasicShader.loadShader(
         "shaders/basic.vert",
         "shaders/basic.frag");
-    /*depthMapShader.loadShader(
-        "shaders/depthMap.vert",
-        "shaders/depthMap.frag"
-    );*/
 }
 
 void initUniforms() {
     myBasicShader.useShaderProgram();
 
     //initialize the model matrix
-    //model = glm::mat4(1.0f);
     model = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
     modelLoc = glGetUniformLocation(myBasicShader.shaderProgram, "model");
 
@@ -357,7 +346,6 @@ void initUniforms() {
 
     //set the light direction (direction towards the light)
     lightDir = glm::vec3(1.0f, 0.0f, 0.0f); // originally on Y
-    //lightRotation = glm::rotate(glm::mat4(1.0f), glm::radians(angleDirectionalLight), glm::vec3(0.0f, 0.0f, 1.0f));
     lightDirLoc = glGetUniformLocation(myBasicShader.shaderProgram, "lightDir");
     // send light dir to shader
     glUniform3fv(lightDirLoc, 1, glm::value_ptr(lightDir));
@@ -368,14 +356,11 @@ void initUniforms() {
     // send light color to shader
     glUniform3fv(lightColorLoc, 1, glm::value_ptr(lightColor));
 
-    // point light, on the sun
+    // point light
     sunLight = glm::vec3(10.0, 10.0, 10.0);
-    sunLightRotation = glm::rotate(glm::mat4(1.0f), glm::radians(angleDirectionalLight), glm::vec3(0.0f, 0.0f, 1.0f));
     sunLightLocation = glGetUniformLocation(myBasicShader.shaderProgram, "lightPosEye");
     glUniform3fv(sunLightLocation, 1, glm::value_ptr(sunLight));
 
-   /* lightShader.useShaderProgram();
-    glUniformMatrix4fv(glGetUniformLocation(lightShader.shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));*/
 }
 
 
@@ -384,9 +369,6 @@ void renderBlenderScene(gps::Shader shader) {
     // select active shader program
     shader.useShaderProgram();
 
-   /* model = glm::translate(model, glm::vec3(0, 1.9, 0));
-    model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 1.0f));
-    model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));*/
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
     //send scene normal matrix data to shader
@@ -400,31 +382,7 @@ void renderBlenderScene(gps::Shader shader) {
 void renderScene() {
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    //render the scene
-    //model = glm::mat4(1.0f);
-    //modelLoc = glGetUniformLocation(myBasicShader.shaderProgram, "model");
-
-    //render the scene to the depth buffer
-   /* depthMapShader.useShaderProgram();
-    glUniformMatrix4fv(glGetUniformLocation(depthMapShader.shaderProgram, "lightSpaceTrMatrix"),
-        1,
-        GL_FALSE,
-        glm::value_ptr(computeLightSpaceTrMatrix()));
-    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-    glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
-    glClear(GL_DEPTH_BUFFER_BIT);*/
-
-    // render the elements of the scene
-    /*renderGrass(myBasicShader);
-    renderTable(myBasicShader);
-    renderTeapot(myBasicShader);
-    renderSakuraTree(myBasicShader);
-    renderTree(myBasicShader);*/
     renderBlenderScene(myBasicShader);
-
-    //glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 }
 
 void cleanup() {
