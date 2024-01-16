@@ -67,7 +67,7 @@ namespace gps {
 
     void Camera::startVisualization(float angle) {
 
-        this->cameraPosition = glm::vec3(-50.0, 700.0, -48.0); // set the camera position up in the sky   
+        this->cameraPosition = glm::vec3(-32.65, -0.66, -20.35); // set the camera position up in the sky   
         this->cameraTarget = glm::vec3(0.0, 1.0, 0.0); // look on the y axis
         glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0, 1, 0)); // create the rotationMatrix with the universeAngle value
         cameraPosition = glm::vec4(rotationMatrix * glm::vec4(this->cameraPosition, 1)); // update camera position with the rotation

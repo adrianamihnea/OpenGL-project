@@ -243,18 +243,6 @@ void processMovement() {
    
     // -- end VIEWS
 
-    // SCENE VIZUALIZATION
-
-    if (pressedKeys[GLFW_KEY_P]) { // START VISUALISATION
-        startVisualisation = true;
-    }
-
-    if (pressedKeys[GLFW_KEY_O]) { // STOP VISUALIZATION
-        startVisualisation = false;
-    }
-
-    // end SCENE VIZUALIZATION
-
     // LIGHTS
 
     if (pressedKeys[GLFW_KEY_K]) { // directional light
@@ -273,19 +261,6 @@ void processMovement() {
     }
 
     // end LIGHTS
-}
-
-void viewSceneAnimation() {
-
-    if (startVisualisation) {
-        sceneAngle += 0.2f;
-        myCamera.startVisualization(sceneAngle);
-
-    }
-}
-
-void processRotation() {
-    myCamera.rotate(pitch, yaw);
 }
 
 void initOpenGLWindow() {
@@ -382,6 +357,7 @@ void renderBlenderScene(gps::Shader shader) {
 void renderScene() {
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     renderBlenderScene(myBasicShader);
 }
 
@@ -400,23 +376,95 @@ int main(int argc, const char* argv[]) {
         return EXIT_FAILURE;
     }
 
+   
+
     initOpenGLState();
     initModels();
     initShaders();
+
+    directionalLightEnabled = true;
+    pointLightEnabled = false;
+    fogEnabled = false;
+
     initUniforms();
     setWindowCallbacks();
 
     glCheckError();
+
+    double rotationStartTime = glfwGetTime();
+    double rotationDuration = 3.0;
+    double rightStartTime = rotationStartTime + rotationDuration;
+    double rightDuration = 5.0;
+    double forwardStartTime = rightStartTime + rightDuration;
+    double forwardDuration = 10.0;
+    double totalDuration = rotationDuration + rightDuration + forwardDuration;
+
     // application loop
     while (!glfwWindowShouldClose(myWindow.getWindow())) {
-        processMovement();
-        //processRotation();
-        renderScene();
+        double currentTime = glfwGetTime();
+        double elapsedTime = currentTime - rotationStartTime;
 
-        glfwPollEvents();
-        glfwSwapBuffers(myWindow.getWindow());
+        if (elapsedTime < totalDuration) {
+            // Rotation phase
+            if (elapsedTime < rightStartTime) {
+                float rotationSpeed = 0.03f;
+                angle -= rotationSpeed * static_cast<float>(elapsedTime);
+                model = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
+            }
+            // Right phase
+            else if (elapsedTime < forwardStartTime) {
+                // Calculate the progress of the right phase
+                float rightProgress = static_cast<float>((elapsedTime - rightStartTime) / rightDuration);
 
-        glCheckError();
+                // Move the camera to the right during the right phase
+                myCamera.move(gps::MOVE_RIGHT, cameraSpeed * rightProgress * 10);
+
+                // Update the view matrix
+                view = myCamera.getViewMatrix();
+                myBasicShader.useShaderProgram();
+                glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+                // Compute normal matrix
+                normalMatrix = glm::mat3(glm::inverseTranspose(view * model));
+            }
+            // Forward phase
+            else {
+                // Calculate the progress of the forward phase
+                float forwardProgress = static_cast<float>((elapsedTime - forwardStartTime) / forwardDuration);
+
+                // Move the camera forward during the forward phase (adjust the values as needed)
+                myCamera.move(gps::MOVE_FORWARD, cameraSpeed * forwardProgress * 30);
+
+                // Update the view matrix
+                view = myCamera.getViewMatrix();
+                myBasicShader.useShaderProgram();
+                glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+                // Compute normal matrix
+                normalMatrix = glm::mat3(glm::inverseTranspose(view * model));
+            }
+
+            processMovement();
+
+            renderScene();
+
+            glfwPollEvents();
+            glfwSwapBuffers(myWindow.getWindow());
+
+            glCheckError();
+        }
+        else {
+            // Break the loop after the total duration is reached
+            //break;
+
+            processMovement();
+            renderScene();
+
+            glfwPollEvents();
+            glfwSwapBuffers(myWindow.getWindow());
+
+            glCheckError();
+        }
     }
 
     cleanup();

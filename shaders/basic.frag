@@ -19,9 +19,11 @@ uniform vec3 lightPosEye;
 // textures
 uniform sampler2D diffuseTexture;
 uniform sampler2D specularTexture;
-// Add these lines for toggling lights
-uniform bool directionalLightEnabled;
-uniform bool pointLightEnabled;
+
+// Add these lines for toggling lights and fog
+uniform bool directionalLightEnabled = true;
+uniform bool pointLightEnabled = false;
+uniform bool fogEnabled = false;
 
 //components
 vec3 ambient;
@@ -97,12 +99,13 @@ void computePointLight() {
 
 float computeFog()
 {
- vec4 fPosEye = view * model * vec4(fPosition, 1.0f);
- float fogDensity = 0.006f;
- float fragmentDistance = length(fPosEye);
- float fogFactor = exp(-pow(fragmentDistance * fogDensity, 2));
+	vec4 fPosEye = view * model * vec4(fPosition, 1.0f);
+	float fogDensity = 0.006f;
+	float fragmentDistance = length(fPosEye);
+	float fogFactor = exp(-pow(fragmentDistance * fogDensity, 2));
  
- return clamp(fogFactor, 0.0f, 1.0f);
+	return clamp(fogFactor, 0.0f, 1.0f);
+
 }
 
 void main() 
@@ -116,8 +119,10 @@ void main()
 	
 	fColor = vec4(color, 1.0f);
 
-	float fogFactor = computeFog();
-	vec4 fogColor = vec4(0.5f, 0.5f, 0.5f, 1.0f);
-	fColor = fogColor*(1-fogFactor)+fColor*fogFactor;
+	if(fogEnabled) {
+		float fogFactor = computeFog();
+		vec4 fogColor = vec4(0.5f, 0.5f, 0.5f, 1.0f);
+		fColor = fogColor*(1-fogFactor)+fColor*fogFactor;
+	}
 
 }
