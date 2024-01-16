@@ -85,6 +85,7 @@ GLuint shadowMapFBO;
 
 bool directionalLightEnabled = true;
 bool pointLightEnabled = false;
+bool fogEnabled = false;
 
 GLenum glCheckError_(const char* file, int line)
 {
@@ -270,6 +271,11 @@ void processMovement() {
     if (pressedKeys[GLFW_KEY_L]) { // point light
         pointLightEnabled = !pointLightEnabled;
         glUniform1i(glGetUniformLocation(myBasicShader.shaderProgram, "pointLightEnabled"), pointLightEnabled);
+    }
+
+    if (pressedKeys[GLFW_KEY_F]) { // fog
+        fogEnabled = !fogEnabled;
+        glUniform1i(glGetUniformLocation(myBasicShader.shaderProgram, "fogEnabled"), fogEnabled);
     }
 
     // end LIGHTS
